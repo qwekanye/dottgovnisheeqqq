@@ -3,36 +3,31 @@ name: Build DOT APK
 'on':
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      
-name: Download project
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      
-name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: '17'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-      
-name: Build APK
-      run: |
-        if [ -f gradlew ]; then
-          chmod +x gradlew./gradlew assembleDebug
-        else
-          echo "Gradle wrapper not found"
-          exit 1
-        fi
+      - name: Build APK
+        run: |
+          if [ ! -f gradlew ]; then
+            echo "Gradle wrapper is missing"
+            exit 1
+          fi
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      
-name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: DOT-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DOT-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk

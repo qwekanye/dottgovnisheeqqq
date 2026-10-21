@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#101114">
+<title>DOT</title>
+<style>
+:root{--bg:#101114;--lime:#c6ff4d;--white:#f5f5f5;--muted:#8d9098;--panel:#1b1d22}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:520px;height:100dvh;min-height:480px;padding:26px 24px 24px;display:flex;flex-direction:column;position:relative}
+.top{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:22px;letter-spacing:.22em;font-weight:900}.logo span{color:var(--lime)}
+.pill{font-size:12px;color:var(--muted);border:1px solid #303238;border-radius:99px;padding:8px 12px;letter-spacing:.06em}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.eyebrow{color:var(--muted);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+h1{font-size:clamp(42px,12vw,64px);line-height:.98;letter-spacing:-.07em;margin:16px 0 14px;font-weight:850;text-align:center}
+p{color:var(--muted);line-height:1.6;font-size:14px;text-align:center;max-width:270px;margin:0 auto}
+button{border:0;cursor:pointer;font:inherit}
+.primary{margin-top:34px;width:100%;max-width:280px;border-radius:16px;padding:18px 20px;background:var(--lime);color:#101114;font-weight:850;letter-spacing:.12em;box-shadow:0 8px 35px #c6ff4d20;transition:transform .12s}
+.primary:active{transform:scale(.98)}
+.best{margin-top:22px;color:var(--muted);font-size:12px;letter-spacing:.08em}.best strong{color:var(--white);margin-left:8px}
+.stats{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.stat-label{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.stat-value{font-size:28px;font-weight:800;letter-spacing:-.04em;margin-top:5px}
+.timer{font-variant-numeric:tabular-nums}
+.arena{position:absolute;inset:115px 0 0;overflow:hidden;border-radius:24px;background:radial-gradient(ellipse at center,#171a1c 0%,#101114 72%);border:1px solid #25272b}
+.target{position:absolute;width:58px;height:58px;border-radius:50%;background:var(--lime);box-shadow:0 0 24px #c6ff4d65,0 0 70px #c6ff4d20;transform:translate(-50%,-50%);animation:pop .18s ease-out}
+@keyframes pop{from{scale:.45;opacity:.4}to{scale:1;opacity:1}}
+.bottom-note{font-size:11px;color:#666a73;text-align:center;letter-spacing:.12em;padding-top:18px}
+.hidden{display:none!important}
+.result-number{font-size:clamp(88px,24vw,126px);font-weight:850;letter-spacing:-.09em;color:var(--lime);line-height:1;margin:12px 0}
+.result-caption{font-size:12px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}
+.result-row{display:flex;gap:12px;width:100%;max-width:300px;margin-top:28px}
+.result-box{flex:1;background:var(--panel);border-radius:16px;padding:17px 12px;text-align:center}
+.result-box strong{display:block;font-size:24px;margin-top:8px}.result-box span{font-size:10px;color:var(--muted);letter-spacing:.12em}
+#toast{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);color:var(--lime);font-weight:800;opacity:0;pointer-events:none}
+@media(max-height:650px){#app{padding-top:18px;padding-bottom:14px}.arena{inset:90px 0 0}.primary{margin-top:22px}.best{margin-top:14px}}
+</style>
+</head>
+<body><div id="app">
+<header class="top"><div class="logo">D<span>O</span>T</div><div class="pill">REACTION GAME</div></header>
+<main id="home">
+<div class="eyebrow">ONE TAP. ONE CHANCE.</div>
+<h1>Лови<br>момент.</h1>
+<p>Нажимай на точку как можно быстрее. У тебя 30 секунд — побей свой рекорд.</p>
+<button class="primary" id="start">НАЧАТЬ ИГРУ ↗</button>
+<div class="best">ЛИЧНЫЙ РЕКОРД <strong id="homeBest">0</strong></div>
+</main>
+<main id="game" class="hidden">
+<div class="stats"><div><div class="stat-label">Очки</div><div class="stat-value" id="score">0</div></div><div style="text-align:right"><div class="stat-label">Время</div><div class="stat-value timer" id="time">30.0</div></div></div>
+<div class="arena" id="arena"><button class="target" id="target" aria-label="Нажми на точку"></button></div>
+<div class="bottom-note">TAP THE DOT · KEEP YOUR FOCUS</div>
+</main>
+<main id="result" class="hidden">
+<div class="eyebrow">ROUND COMPLETE</div>
+<h1 style="font-size:clamp(36px,9vw,48px);margin-bottom:18px">Хорошая<br>реакция.</h1>
+<div class="result-caption">ТВОЙ РЕЗУЛЬТАТ</div><div class="result-number" id="finalScore">0</div>
+<div class="result-row"><div class="result-box"><span>ЛУЧШИЙ СЧЁТ</span><strong id="finalBest">0</strong></div><div class="result-box"><span>ПОПАДАНИЯ</span><strong id="hits">0</strong></div></div>
+<button class="primary" id="again">ЕЩЁ РАЗ ↗</button>
+<button id="homeBtn" style="background:transparent;color:var(--muted);margin-top:18px;font-size:12px;letter-spacing:.12em">НА ГЛАВНУЮ</button>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let score=0, endAt=0, raf=0, active=false, hits=0, best=Number(localStorage.getItem('dotBest')||0);
+$('homeBest').textContent=best;
+function show(id){['home','game','result'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function placeTarget(){
+ const arena=$('arena'), t=$('target'), pad=34;
+ const w=Math.max(1,arena.clientWidth-pad*2),h=Math.max(1,arena.clientHeight-pad*2);
+ t.style.left=(pad+Math.random()*w)+'px';t.style.top=(pad+Math.random()*h)+'px';
+ t.style.animation='none';void t.offsetWidth;t.style.animation='pop .18s ease-out';
+}
+function start(){
+ cancelAnimationFrame(raf);score=0;hits=0;active=true;endAt=performance.now()+30000;
+ $('score').textContent='0';show('game');placeTarget();tick();
+}
+function tick(){
+ if(!active)return;
+ const left=Math.max(0,endAt-performance.now());
+ $('time').textContent=(left/1000).toFixed(1);
+ if(left<=0){finish();return}
+ raf=requestAnimationFrame(tick);
+}
+function finish(){
+ active=false;cancelAnimationFrame(raf);
+ if(score>best){best=score;localStorage.setItem('dotBest',String(best))}
+ $('finalScore').textContent=score;$('finalBest').textContent=best;$('hits').textContent=hits;$('homeBest').textContent=best;show('result');
+}
+$('start').addEventListener('click',start);$('again').addEventListener('click',start);
+$('homeBtn').addEventListener('click',()=>{ $('homeBest').textContent=best;show('home') });
+$('target').addEventListener('click',e=>{e.preventDefault();if(!active)return;score++;hits++;$('score').textContent=score;placeTarget()});
+$('arena').addEventListener('pointerdown',e=>{if(e.target!==$('target')&&active){/* misses do not score */}});
+window.addEventListener('resize',()=>{if(active)placeTarget()});
+</script></body></html>
